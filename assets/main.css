@@ -5,6 +5,8 @@ body {
     font-family: Arial, sans-serif;
     line-height: 1.6;
     margin: 20px;
+    background-color: #131313;
+    color: #14ee00;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -12,18 +14,18 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 a {
-    color: #333;
+    color: #059ce2;
     text-decoration: none;
 }
 
 a:hover {
-    color: #777;
+    color: #f700ff;
 }
 
 header {
     padding: 1em;
-    background-color: #f1f1f1;
-    border-bottom: 1px solid #ccc;
+    background-color: #5555;
+    border-bottom: 1px solid #555;
 }
 
 header h1 {
@@ -40,3 +42,11 @@ nav ul li {
     display: inline;
     margin-right: 1em;
 }
+
+/* Add the following rule to improve code block appearance */
+pre {
+    background-color: #5555;
+    padding: 1em;
+    border-radius: 3px;
+}
+
