@@ -6,7 +6,9 @@ require (
 	github.com/Microsoft/go-winio v0.6.0 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20230331115716-d34776aa93ec // indirect
 	github.com/acomagu/bufpipe v1.0.4 // indirect
+	github.com/alecthomas/chroma v0.10.0 // indirect
 	github.com/cloudflare/circl v1.3.2 // indirect
+	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-git/go-billy/v5 v5.4.1 // indirect
@@ -21,6 +23,8 @@ require (
 	github.com/skeema/knownhosts v1.1.0 // indirect
 	github.com/src-d/gcfg v1.4.0 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
+	github.com/yuin/goldmark v1.5.4 // indirect
+	github.com/yuin/goldmark-highlighting v0.0.0-20220208100518-594be1970594 // indirect
 	golang.org/x/crypto v0.7.0 // indirect
 	golang.org/x/mod v0.9.0 // indirect
 	golang.org/x/net v0.8.0 // indirect

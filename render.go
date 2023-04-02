@@ -8,7 +8,9 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"github.com/russross/blackfriday/v2"
+	"github.com/yuin/goldmark"
+	highlighting "github.com/yuin/goldmark-highlighting"
+	"github.com/yuin/goldmark/extension"
 )
 
 type Page struct {
@@ -34,7 +36,21 @@ func renderPage(w http.ResponseWriter, localPath, filePath string) error {
 }
 
 func renderMarkdown(w http.ResponseWriter, content []byte) {
-	md := blackfriday.Run(content)
+	md := goldmark.New(
+		goldmark.WithExtensions(
+			extension.GFM, // GitHub Flavored Markdown
+			highlighting.NewHighlighting(
+				highlighting.WithStyle("monokai"),
+			),
+		),
+	)
+
+	var mdBuf bytes.Buffer
+	err := md.Convert(content, &mdBuf)
+	if err != nil {
+		http.Error(w, "Error converting Markdown", http.StatusInternalServerError)
+		return
+	}
 
 	layout, err := ioutil.ReadFile(filepath.Join(localPath, "assets/_layout.html"))
 	if err != nil {
@@ -42,7 +58,7 @@ func renderMarkdown(w http.ResponseWriter, content []byte) {
 		return
 	}
 
-	page := &Page{Content: template.HTML(md)}
+	page := &Page{Content: template.HTML(mdBuf.String())}
 	t, err := template.New("layout").Parse(string(layout))
 	if err != nil {
 		http.Error(w, "Error parsing layout", http.StatusInternalServerError)
