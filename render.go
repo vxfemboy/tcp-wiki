@@ -1,12 +1,19 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"html/template"
+	"io/ioutil"
 	"net/http"
 	"path/filepath"
 
 	"github.com/russross/blackfriday/v2"
 )
+
+type Page struct {
+	Content template.HTML
+}
 
 func renderPage(w http.ResponseWriter, localPath, filePath string) error {
 	content, err := readFileFromRepo(localPath, filePath)
@@ -28,8 +35,29 @@ func renderPage(w http.ResponseWriter, localPath, filePath string) error {
 
 func renderMarkdown(w http.ResponseWriter, content []byte) {
 	md := blackfriday.Run(content)
+
+	layout, err := ioutil.ReadFile(filepath.Join(localPath, "assets/_layout.html"))
+	if err != nil {
+		http.Error(w, "Layout not found", http.StatusInternalServerError)
+		return
+	}
+
+	page := &Page{Content: template.HTML(md)}
+	t, err := template.New("layout").Parse(string(layout))
+	if err != nil {
+		http.Error(w, "Error parsing layout", http.StatusInternalServerError)
+		return
+	}
+
+	var buf bytes.Buffer
+	err = t.Execute(&buf, page)
+	if err != nil {
+		http.Error(w, "Error rendering layout", http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Write(md)
+	w.Write(buf.Bytes())
 }
 
 func renderStatic(w http.ResponseWriter, content []byte, ext string) {
