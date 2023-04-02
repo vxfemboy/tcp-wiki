@@ -1,8 +1,7 @@
 /* assets/main.css */
 
-/* placeholder for better sytle */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Courier New', Courier, monospace;
     line-height: 1.6;
     margin: 20px;
     background-color: #131313;
@@ -24,29 +23,47 @@ a:hover {
 
 header {
     padding: 1em;
-    background-color: #5555;
+    background-color: #333;
     border-bottom: 1px solid #555;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 header h1 {
-    display: inline-block;
     margin-right: 1em;
+    font-size: 1.5em;
 }
 
 nav ul {
     list-style: none;
     padding: 0;
+    margin: 0;
 }
 
 nav ul li {
     display: inline;
     margin-right: 1em;
+    font-size: 1.1em;
 }
 
-/* Add the following rule to improve code block appearance */
 pre {
     background-color: #5555;
     padding: 1em;
     border-radius: 3px;
 }
+/* Button styles */
+nav ul li a {
+    display: inline-block;
+    padding: 8px 16px;
+    border: 1px solid #14ee00;
+    border-radius: 3px;
+    background-color: transparent;
+    font-size: 1.1em;
+    transition: background-color 0.3s, color 0.3s;
+}
 
+nav ul li a:hover {
+    background-color: #14ee00;
+    color: #131313;
+}
