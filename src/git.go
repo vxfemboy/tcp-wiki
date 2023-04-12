@@ -6,6 +6,7 @@ import (
 	"os"
 
 	git "github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 )
 
 func cloneRepository(repoURL, localPath string) error {
@@ -16,7 +17,7 @@ func cloneRepository(repoURL, localPath string) error {
 	return err
 }
 
-func pullRepository(localPath string) error {
+func pullRepository(localPath, branch string) error {
 	repo, err := git.PlainOpen(localPath)
 	if err != nil {
 		return err
@@ -27,7 +28,10 @@ func pullRepository(localPath string) error {
 		return err
 	}
 
-	err = worktree.Pull(&git.PullOptions{RemoteName: "origin"})
+	err = worktree.Pull(&git.PullOptions{
+		RemoteName:    "origin",
+		ReferenceName: plumbing.NewBranchReferenceName(branch),
+	})
 	if err != nil && err != git.NoErrAlreadyUpToDate {
 		return err
 	}

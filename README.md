@@ -1,8 +1,13 @@
 H0wdy!!!
 
-feel free to commit, leave suggestions, issues, or really anything <3
+feel free to commit, leave suggestions/ideas, issues, or really anything <3
 
-## SETUP
+# What is TCP.WIKI ? 
+
+## Project Goals
+secure and verifiable wiki for projects, code, courses, documents, articles, tutorials, and more
+
+## Setup
 **For a normal user you can follow this process:**
 
 First clone the repo:
@@ -27,28 +32,37 @@ Then cd and run dev.sh
 cd tcp-wiki
 bash dev.sh
 ```
+Then you just have to execute this to run the server:
+```go
+cd src && go run .
+```
 Then you goto your browser and visit: http://127.0.0.1:8080/
 
 This method just adds in some handy symlinks for development purposes
 
-### Use with your own repo?
+## Want to use with your own repo?
 
-All you have to do is modify the main.go file:
+All you have to do is modify the following lines in the src/main.go file:
 ```go
 const repoURL = "https://git.tcp.direct/S4D/tcp-wiki.git"
 ```
-Change this line to your repo link, and enjoy!
+Change `https://git.tcp.direct/S4D/tcp-wiki.git` to your repo link, and:
+```go
+const repoBRANCH = "main"
+```
+change `main` to your specific repo's branch and you should be good to go!
 
 ## TODO
 
 - [ ] MANY FUCKING THINGS
 - [ ] Webhook support for auto pull on push/update of the git repo
-- [ ] Git Branch support
+- [x] Git Branch support
 - [ ] add a star/upvote/like feature for pages
 - [ ] edit tracker 
     - [ ] Author 
     - [ ] last edited
     - [ ] last editor/commit
+    - [ ] PGP Signed & Verification
 - [ ] pgp signed intergration
 - [x] comments using bitcask - generated in comments.db/
     - [ ] verification - no login pgp
