@@ -81,6 +81,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("Rendering file %q from path %q", filePath, r.URL.Path)
 
+	// Set the Content Security Policy
+	csp := "default-src 'self'; img-src 'self'; script-src 'self'; style-src 'self';"
+	w.Header().Set("Content-Security-Policy", csp)
+
 	err = renderPage(w, r, localPath, filePath, commentsDB)
 	if err != nil {
 		log.Printf("Comment loading? %q", commentsDB.Path())

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/prologic/bitcask"
@@ -62,6 +63,15 @@ func submitCommentHandler(w http.ResponseWriter, r *http.Request) {
 	pagePath := r.FormValue("path")
 	if pagePath == "" {
 		http.Error(w, "Path is required", http.StatusBadRequest)
+		return
+	}
+
+	author := strings.TrimSpace(r.FormValue("author"))
+	content := strings.TrimSpace(r.FormValue("content"))
+
+	// Check if author and content fields are not empty
+	if author == "" || content == "" {
+		http.Error(w, "Author and content fields must not be empty", http.StatusBadRequest)
 		return
 	}
 
