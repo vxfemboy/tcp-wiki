@@ -28,20 +28,21 @@
             <h2>Comments</h2>
             {{ range .Comments }}
             <div class="comment">
-                <p>{{ .Body }}</p>
-                <p><small>{{ .Author }} at {{ .CreatedAt }}</small></p>
+                <p>{{ .Content }}</p>
+                <p><small>{{ .Author }} at {{ .Date }}</small></p>
             </div>
             {{ end }}
         </div>
     </main>
     <form method="POST" action="/submit_comment">
+        <input type="hidden" name="path" value="{{ .Path }}">
         <div class="form-group">
             <label for="author">Name:</label>
             <input type="text" id="author" name="author">
         </div>
         <div class="form-group">
             <label for="body">Comment:</label>
-            <textarea id="body" name="body"></textarea>
+            <textarea id="content" name="content"></textarea>
         </div>
         <button type="submit">Submit</button>
     </form>
