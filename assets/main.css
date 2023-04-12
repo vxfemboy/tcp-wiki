@@ -67,3 +67,33 @@ nav ul li a:hover {
     background-color: #14ee00;
     color: #131313;
 }
+
+main {
+    flex-grow: 1;
+    padding: 20px;
+}
+
+section {
+    margin: 20px 0;
+}
+
+section h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+
+.comment {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.comment p {
+    margin: 0;
+}
+
+.comment-author {
+    font-size: 0.8em;
+    color: #999;
+}

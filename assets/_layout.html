@@ -20,8 +20,30 @@
         </nav>
     </header>
     <main>
-        {{ .Content }}
+        <div class="content">
+            {{ .Content }}
+        </div>
+        <hr>
+        <div class="comments">
+            <h2>Comments</h2>
+            {{ range .Comments }}
+            <div class="comment">
+                <p>{{ .Body }}</p>
+                <p><small>{{ .Author }} at {{ .CreatedAt }}</small></p>
+            </div>
+            {{ end }}
+        </div>
     </main>
+    <form method="POST" action="/submit_comment">
+        <div class="form-group">
+            <label for="author">Name:</label>
+            <input type="text" id="author" name="author">
+        </div>
+        <div class="form-group">
+            <label for="body">Comment:</label>
+            <textarea id="body" name="body"></textarea>
+        </div>
+        <button type="submit">Submit</button>
+    </form>
 </body>
 </html>
-
