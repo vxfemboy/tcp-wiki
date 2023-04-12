@@ -8,7 +8,7 @@ rm ../data/assets/*
 ln ../assets/_layout.html ../data/assets/_layout.html
 ln ../assets/main.css ../data/assets/main.css
 rm ../data/README.md
-ln ./README.md ../data/README.md
+ln ../README.md ../data/README.md
 echo "Developer setup ready!"
 echo "Goto: http://127.0.0.1:8080"
 
