@@ -71,6 +71,7 @@ change `main` to your specific repo's branch and you should be good to go!
     - [ ] sort by date etc
     - [ ] reply to replies
     - [ ] set security controls per page
+    - [ ] auto refresh on post
 - [ ] dynamically generated links for all avaiable pages
     - [ ] sitemap 
     - [ ] anti robot shit here

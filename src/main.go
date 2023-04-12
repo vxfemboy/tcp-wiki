@@ -17,7 +17,7 @@ import (
 
 const repoURL = "https://git.tcp.direct/S4D/tcp-wiki.git"
 const repoBRANCH = "main"
-const localPath = "../data"
+const localPath = "data"
 
 var commentsDB *bitcask.Bitcask
 
@@ -27,7 +27,7 @@ func main() {
 		log.Fatalf("Failed to clone repository: %v", err)
 	}
 
-	commentsDB, err = bitcask.Open("../comments.db")
+	commentsDB, err = bitcask.Open("comments.db")
 	if err != nil {
 		log.Fatalf("Failed to open comments database: %v", err)
 	}
@@ -66,7 +66,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	//...
 
-	if r.URL.Path == "../assets/favicon.ico" {
+	if r.URL.Path == "assets/favicon.ico" {
 		return
 	}
 
