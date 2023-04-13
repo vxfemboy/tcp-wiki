@@ -97,3 +97,22 @@ section h2 {
     font-size: 0.8em;
     color: #999;
 }
+
+/* reduce font size for authored and modified date */
+div.content div[style="font-size: 0.8em;"] {
+    font-size: 0.6em;
+}
+
+/* add bar under authored and modified date */
+div.content div[style="font-size: 0.8em;"]:after {
+    content: "";
+    display: block;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    border-bottom: 1px solid #14ee00;
+}
+
+/* align authored and modified date to the right */
+div.content div[style="font-size: 0.8em;"] {
+    text-align: right;
+}

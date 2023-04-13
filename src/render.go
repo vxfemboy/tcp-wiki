@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"time"
 
 	"github.com/prologic/bitcask"
 	"github.com/yuin/goldmark"
@@ -16,9 +17,13 @@ import (
 )
 
 type Page struct {
-	Content  template.HTML
-	Comments []Comment
-	Path     string
+	Content          template.HTML
+	Comments         []Comment
+	Path             string
+	Author           string
+	AuthoredDate     time.Time
+	LastModifier     string
+	LastModifiedDate time.Time
 }
 
 func renderPage(w http.ResponseWriter, r *http.Request, localPath, filePath string, commentsDB *bitcask.Bitcask) error {
@@ -32,7 +37,7 @@ func renderPage(w http.ResponseWriter, r *http.Request, localPath, filePath stri
 	ext := filepath.Ext(filePath)
 	switch ext {
 	case ".md":
-		renderMarkdown(w, r, content, commentsDB)
+		renderMarkdown(w, r, content, commentsDB, localPath, filePath) // Updated the call to include localPath and filePath
 	case ".html", ".css":
 		renderStatic(w, content, ext)
 	default:
@@ -41,7 +46,7 @@ func renderPage(w http.ResponseWriter, r *http.Request, localPath, filePath stri
 	return nil
 }
 
-func renderMarkdown(w http.ResponseWriter, r *http.Request, content []byte, commentsDB *bitcask.Bitcask) {
+func renderMarkdown(w http.ResponseWriter, r *http.Request, content []byte, commentsDB *bitcask.Bitcask, localPath, filePath string) {
 	md := goldmark.New(
 		goldmark.WithExtensions(
 			extension.GFM, // GitHub Flavored Markdown
@@ -51,8 +56,14 @@ func renderMarkdown(w http.ResponseWriter, r *http.Request, content []byte, comm
 		),
 	)
 
+	author, authoredDate, lastModifier, lastModifiedDate, err := getAuthorAndLastModification(localPath, filePath)
+	if err != nil {
+		http.Error(w, "Error fetching author and last modification date", http.StatusInternalServerError)
+		return
+	}
+
 	var mdBuf bytes.Buffer
-	err := md.Convert(content, &mdBuf)
+	err = md.Convert(content, &mdBuf)
 	if err != nil {
 		http.Error(w, "Error converting Markdown", http.StatusInternalServerError)
 		return
@@ -70,7 +81,15 @@ func renderMarkdown(w http.ResponseWriter, r *http.Request, content []byte, comm
 		return
 	}
 
-	page := &Page{Content: template.HTML(mdBuf.String()), Comments: comments, Path: r.URL.Path}
+	page := &Page{
+		Content:          template.HTML(mdBuf.String()),
+		Comments:         comments,
+		Path:             r.URL.Path,
+		Author:           author,
+		AuthoredDate:     authoredDate,
+		LastModifier:     lastModifier,
+		LastModifiedDate: lastModifiedDate,
+	}
 	t, err := template.New("layout").Parse(string(layout))
 	if err != nil {
 		http.Error(w, "Error parsing layout", http.StatusInternalServerError)

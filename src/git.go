@@ -4,9 +4,11 @@ import (
 	//"fmt"
 
 	"os"
+	"time"
 
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
 func cloneRepository(repoURL, localPath string) error {
@@ -74,4 +76,32 @@ func readFileFromRepo(localPath string, filePath string) ([]byte, error) {
 	}
 
 	return []byte(content), nil
+}
+
+func getAuthorAndLastModification(localPath, filePath string) (string, time.Time, string, time.Time, error) {
+	repo, err := git.PlainOpen(localPath)
+	if err != nil {
+		return "", time.Time{}, "", time.Time{}, err
+	}
+
+	iter, err := repo.Log(&git.LogOptions{FileName: &filePath})
+	if err != nil {
+		return "", time.Time{}, "", time.Time{}, err
+	}
+
+	var firstCommit *object.Commit
+	var lastCommit *object.Commit
+
+	err = iter.ForEach(func(c *object.Commit) error {
+		if firstCommit == nil {
+			firstCommit = c
+		}
+		lastCommit = c
+		return nil
+	})
+	if err != nil {
+		return "", time.Time{}, "", time.Time{}, err
+	}
+
+	return firstCommit.Author.Name, firstCommit.Author.When, lastCommit.Author.Name, lastCommit.Author.When, nil
 }

@@ -24,6 +24,13 @@
             {{ .Content }}
         </div>
         <hr>
+        <div style="font-size: 0.3em; text-align: right; margin-bottom: 5px;">
+            {{- if eq .Author .LastModifier -}}
+              Authored: {{ .Author }} @ {{ .AuthoredDate.Format "2006/01/02" }}
+            {{- else -}}
+              Authored: {{ .Author }} @ {{ .AuthoredDate.Format "2006/01/02" }} - Modified: {{ .LastModifier }} @ {{ .LastModifiedDate.Format "2006/01/02" }}
+            {{- end -}}
+          </div>          
         <div class="comments">
             <h2>Comments</h2>
             {{ range .Comments }}

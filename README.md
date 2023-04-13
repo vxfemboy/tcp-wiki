@@ -58,10 +58,10 @@ change `main` to your specific repo's branch and you should be good to go!
 - [ ] Webhook support for auto pull on push/update of the git repo
 - [x] Git Branch support
 - [ ] add a star/upvote/like feature for pages
-- [ ] edit tracker 
-    - [ ] Author 
-    - [ ] last edited
-    - [ ] last editor/commit
+- [x] edit/version tracker 
+    - [x] Author 
+    - [x] last edited
+    - [ ] last editor/commit [?] maybe working
     - [ ] PGP Signed & Verification
 - [ ] pgp signed intergration
 - [x] comments using bitcask - generated in comments.db/
