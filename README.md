@@ -4,6 +4,9 @@ feel free to commit, leave suggestions/ideas, issues, or really anything <3
 
 # What is TCP.WIKI ? 
 
+https://tcp.ac/i/IFAZE
+
+
 ## Project Goals
 secure and verifiable wiki for projects, code, courses, documents, articles, tutorials, and more
 
