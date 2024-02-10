@@ -58,7 +58,6 @@ change `main` to your specific repo's branch and you should be good to go!
 ## TODO
 
 - [ ] config files
-- [ ] MANY FUCKING THINGS
 - [ ] Webhook support for auto pull on push/update of the git repo
 - [x] Git Branch support
 - [ ] add a star/upvote/like feature for pages
