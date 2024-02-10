@@ -39,7 +39,8 @@
                 <p><small>{{ .Author }} at {{ .Date }}</small></p>
             </div>
             {{ end }}
-        </div>
+        </div> 
+
     </main>
     <form method="POST" action="/submit_comment">
         <input type="hidden" name="path" value="{{ .Path }}">
@@ -53,5 +54,13 @@
         </div>
         <button type="submit">Submit</button>
     </form>
+      <div class="sidebar">
+        <h2>Pages</h2>
+        <ul>
+          {{ range .Pages }}
+            <li><a href="/{{ . }}">{{ . }}</a></li>
+          {{ end }}
+        </ul>
+      </div>
 </body>
 </html>

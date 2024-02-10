@@ -99,7 +99,6 @@ section h2 {
     color: #999;
 }
 
-/* Added styles */
 .page-info {
     font-size: 0.8em;
     display: flex;
@@ -118,3 +117,16 @@ section h2 {
     background-color: #555;
     margin-left: 5px;
 }
+
+.sidebar-toggle button {
+    background-color: #333;
+    color: #14ee00;
+    border: 1px solid #14ee00;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+.sidebar-toggle button:hover {
+    background-color: #14ee00;
+    color: #131313;
+}
+

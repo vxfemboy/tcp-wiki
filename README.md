@@ -57,6 +57,7 @@ change `main` to your specific repo's branch and you should be good to go!
 
 ## TODO
 
+- [ ] config files
 - [ ] MANY FUCKING THINGS
 - [ ] Webhook support for auto pull on push/update of the git repo
 - [x] Git Branch support
@@ -75,10 +76,8 @@ change `main` to your specific repo's branch and you should be good to go!
     - [ ] reply to replies
     - [ ] set security controls per page
     - [ ] auto refresh on post
-- [ ] dynamically generated links for all avaiable pages
+- [x] dynamically generated links for all avaiable pages
     - [ ] sitemap 
     - [ ] anti robot shit here
-    - [ ] acual working pages!?
-- [ ] post quantum intergration and verification
-- [ ] BUILD UP THAT MARKDOWN SUPPORT
-- [ ] fix whatever i did to fuck up design/layout/css???
+    - [x] acual working pages!?
+    - [ ] image support
