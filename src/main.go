@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+  "path/filepath"
 	"os"
 	"os/signal"
 	"strings"
@@ -33,6 +34,8 @@ func main() {
 	}
 	defer commentsDB.Close()
 
+  fs := http.FileServer(http.Dir("./assets"))
+  http.Handle("/assets/", http.StripPrefix("/assets/", fs))
 	http.HandleFunc("/", handler)
 	http.HandleFunc("/submit_comment", submitCommentHandler)
 
@@ -61,12 +64,10 @@ func main() {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	//for debugging
+	// For debugging
 	log.Printf("LOCAL PATH: %q", localPath)
 
-	//...
-
-	if r.URL.Path == "assets/favicon.ico" {
+	if r.URL.Path == "./assets/favicon.ico" {
 		return
 	}
 
@@ -85,10 +86,37 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	csp := "default-src 'self'; img-src 'self'; script-src 'self'; style-src 'self';"
 	w.Header().Set("Content-Security-Policy", csp)
 
-	err = renderPage(w, r, localPath, filePath, commentsDB)
-	if err != nil {
-		log.Printf("Comment loading? %q", commentsDB.Path())
+  markdownFiles, err := listMarkdownFiles(localPath)
+  if err != nil {
+    log.Printf("Error listing markdown files: %v", err)
+    http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+    return
+  }
 
+  err = renderPage(w, r, localPath, filePath, commentsDB, markdownFiles)
+  if err != nil {
+		log.Printf("Failed to render page: %v", err)
 		http.Error(w, "File not found", http.StatusNotFound)
 	}
+}
+
+
+func listMarkdownFiles(localPath string) ([]string, error) {
+    var files []string
+    err := filepath.Walk(localPath, func(path string, info os.FileInfo, err error) error {
+        if err != nil {
+            return err
+        }
+        if !info.IsDir() && strings.HasSuffix(path, ".md") {
+            relPath, err := filepath.Rel(localPath, path)
+            if err != nil {
+                return err
+            }
+            // Ensure the path uses web-friendly slashes
+            relPath = strings.Replace(relPath, string(os.PathSeparator), "/", -1)
+            files = append(files, relPath)
+        }
+        return nil
+    })
+    return files, err
 }

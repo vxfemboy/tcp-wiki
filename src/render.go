@@ -24,29 +24,30 @@ type Page struct {
 	AuthoredDate     time.Time
 	LastModifier     string
 	LastModifiedDate time.Time
+  Pages            []string
 }
 
-func renderPage(w http.ResponseWriter, r *http.Request, localPath, filePath string, commentsDB *bitcask.Bitcask) error {
-	content, err := readFileFromRepo(localPath, filePath)
-	if err != nil {
-		return err
-	}
+func renderPage(w http.ResponseWriter, r *http.Request, localPath, filePath string, commentsDB *bitcask.Bitcask, pages []string) error {
+    content, err := readFileFromRepo(localPath, filePath)
+    if err != nil {
+        return err
+    }
 
-	//log.Printf("Read file content: %s", content)
-
-	ext := filepath.Ext(filePath)
-	switch ext {
-	case ".md":
-		renderMarkdown(w, r, content, commentsDB, localPath, filePath) // Updated the call to include localPath and filePath
-	case ".html", ".css":
-		renderStatic(w, content, ext)
-	default:
-		return fmt.Errorf("unsupported file format")
-	}
-	return nil
+    ext := filepath.Ext(filePath)
+    switch ext {
+    case ".md":
+        renderMarkdown(w, r, content, commentsDB, localPath, filePath, pages) // Now correctly includes `pages`
+    case ".html", ".css":
+        renderStatic(w, content, ext)
+    default:
+        return fmt.Errorf("unsupported file format")
+    }
+    return nil
 }
 
-func renderMarkdown(w http.ResponseWriter, r *http.Request, content []byte, commentsDB *bitcask.Bitcask, localPath, filePath string) {
+
+func renderMarkdown(w http.ResponseWriter, r *http.Request, content []byte, commentsDB *bitcask.Bitcask, localPath, filePath string, pages []string) {
+
 	md := goldmark.New(
 		goldmark.WithExtensions(
 			extension.GFM, // GitHub Flavored Markdown
@@ -69,11 +70,13 @@ func renderMarkdown(w http.ResponseWriter, r *http.Request, content []byte, comm
 		return
 	}
 
-	layout, err := ioutil.ReadFile(filepath.Join(localPath, "assets/_layout.html"))
-	if err != nil {
-		http.Error(w, "Layout not found", http.StatusInternalServerError)
-		return
-	}
+
+  layout, err := ioutil.ReadFile("assets/_layout.html")
+  if err != nil {
+    log.Printf("Error reading _layout.html: %v", err)
+    http.Error(w, "Layout not found", http.StatusInternalServerError)
+    return
+  }
 
 	comments, err := getComments(commentsDB, r.URL.Path)
 	if err != nil && err != bitcask.ErrKeyNotFound {
@@ -89,6 +92,7 @@ func renderMarkdown(w http.ResponseWriter, r *http.Request, content []byte, comm
 		AuthoredDate:     authoredDate,
 		LastModifier:     lastModifier,
 		LastModifiedDate: lastModifiedDate,
+    Pages:            pages,
 	}
 	t, err := template.New("layout").Parse(string(layout))
 	if err != nil {
