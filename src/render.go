@@ -21,22 +21,34 @@ type Page struct {
 	Comments         []Comment
 	Path             string
 	Author           string
-	AuthoredDate     time.Time
+	AuthoredDate     *time.Time
 	LastModifier     string
-	LastModifiedDate time.Time
+	LastModifiedDate *time.Time
   Pages            []string
+  UseGit           bool
 }
 
-func renderPage(w http.ResponseWriter, r *http.Request, localPath, filePath string, commentsDB *bitcask.Bitcask, pages []string) error {
-    content, err := readFileFromRepo(localPath, filePath)
-    if err != nil {
+func renderPage(w http.ResponseWriter, r *http.Request, config *Config, filePath string, commentsDB *bitcask.Bitcask, pages []string) error {
+    var content []byte
+    var err error
+
+    if config.Git.UseGit {
+      content, err = readFileFromRepo(config.Git.LocalPath, filePath)
+      if err != nil {
         return err
+      }
+    } else {
+      fullPath := filepath.Join(config.Git.LocalPath, filePath)
+      content, err = ioutil.ReadFile(fullPath)
+      if err != nil {
+        return err
+      }
     }
 
     ext := filepath.Ext(filePath)
     switch ext {
     case ".md":
-        renderMarkdown(w, r, content, commentsDB, localPath, filePath, pages) // Now correctly includes `pages`
+        renderMarkdown(w, r, content, commentsDB, filePath, pages, config)
     case ".html", ".css":
         renderStatic(w, content, ext)
     default:
@@ -45,23 +57,31 @@ func renderPage(w http.ResponseWriter, r *http.Request, localPath, filePath stri
     return nil
 }
 
-
-func renderMarkdown(w http.ResponseWriter, r *http.Request, content []byte, commentsDB *bitcask.Bitcask, localPath, filePath string, pages []string) {
+func renderMarkdown(w http.ResponseWriter, r *http.Request, content []byte, commentsDB *bitcask.Bitcask, filePath string, pages []string, config *Config) {
 
 	md := goldmark.New(
 		goldmark.WithExtensions(
-			extension.GFM, // GitHub Flavored Markdown
-			highlighting.NewHighlighting(
-				highlighting.WithStyle("monokai"),
+			extension.GFM,
+      highlighting.NewHighlighting(
+			  highlighting.WithStyle("monokai"),
 			),
 		),
 	)
 
-	author, authoredDate, lastModifier, lastModifiedDate, err := getAuthorAndLastModification(localPath, filePath)
-	if err != nil {
-		http.Error(w, "Error fetching author and last modification date", http.StatusInternalServerError)
-		return
-	}
+  var author, lastModifier string 
+  var authoredDate, lastModifiedDate *time.Time
+  var err error
+
+  if config.Git.UseGit {
+    var ad, lmd time.Time
+    author, ad, lastModifier, lmd, err = getAuthorAndLastModification(config.Git.LocalPath, filePath)
+	  if err != nil {
+		  http.Error(w, "Error fetching author and last modification date", http.StatusInternalServerError)
+		  return
+	  }
+    authoredDate = &ad 
+    lastModifiedDate = &lmd
+  }
 
 	var mdBuf bytes.Buffer
 	err = md.Convert(content, &mdBuf)
@@ -93,7 +113,9 @@ func renderMarkdown(w http.ResponseWriter, r *http.Request, content []byte, comm
 		LastModifier:     lastModifier,
 		LastModifiedDate: lastModifiedDate,
     Pages:            pages,
+    UseGit:           config.Git.UseGit,
 	}
+
 	t, err := template.New("layout").Parse(string(layout))
 	if err != nil {
 		http.Error(w, "Error parsing layout", http.StatusInternalServerError)
@@ -103,8 +125,8 @@ func renderMarkdown(w http.ResponseWriter, r *http.Request, content []byte, comm
 	var buf bytes.Buffer
 	err = t.Execute(&buf, page)
 	if err != nil {
-		log.Printf("Error executing template: %v", err) // Add this line
-		http.Error(w, "Error rendering layout", http.StatusInternalServerError)
+		log.Printf("Error executing template: %v", err) 
+    http.Error(w, "Error rendering layout", http.StatusInternalServerError)
 		return
 	}
 

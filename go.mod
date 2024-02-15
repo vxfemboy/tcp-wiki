@@ -3,6 +3,7 @@ module git.tcp.direct/S4D/tcp-wiki
 go 1.20
 
 require (
+	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/Microsoft/go-winio v0.6.0 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20230331115716-d34776aa93ec // indirect
 	github.com/acomagu/bufpipe v1.0.4 // indirect
