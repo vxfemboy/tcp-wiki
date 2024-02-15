@@ -1,0 +1,12 @@
+[Server]
+Port = ":8080"
+
+[Git]
+UseGit = true
+RepoURL = "https://git.tcp.direct/S4D/tcp-wiki.git"
+Branch = "main"
+LocalPath = "data"
+
+[Database]
+Path = "comments.db"
+
