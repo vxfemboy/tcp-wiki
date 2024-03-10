@@ -114,7 +114,7 @@ func handler(config *Config, w http.ResponseWriter, r *http.Request) {
 	log.Printf("Rendering file %q from path %q", filePath, r.URL.Path)
 
 	// Set the Content Security Policy
-	csp := "default-src 'self'; img-src 'self'; script-src 'self'; style-src 'self';"
+	csp := "default-src 'self'; font-src 'self' data:; frame-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self';"
 	w.Header().Set("Content-Security-Policy", csp)
 
   markdownFiles, err := listMarkdownFiles(config.Git.LocalPath)

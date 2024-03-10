@@ -14,6 +14,9 @@ import (
 	"github.com/yuin/goldmark"
 	highlighting "github.com/yuin/goldmark-highlighting"
 	"github.com/yuin/goldmark/extension"
+  "github.com/yuin/goldmark/parser"
+  "github.com/yuin/goldmark/renderer/html"
+	img64 "github.com/tenkoh/goldmark-img64"
 )
 
 type Page struct {
@@ -61,11 +64,21 @@ func renderMarkdown(w http.ResponseWriter, r *http.Request, content []byte, comm
 
 	md := goldmark.New(
 		goldmark.WithExtensions(
-			extension.GFM,
+			extension.GFM, // images should probably be base64 encoded https://github.com/tenkoh/goldmark-img64 for extra performance 
+      extension.Table,
       highlighting.NewHighlighting(
 			  highlighting.WithStyle("monokai"),
 			),
-		),
+			img64.Img64,
+		), // does this code below do anything useful?
+    goldmark.WithParserOptions(
+      parser.WithAutoHeadingID(),
+    ),
+    goldmark.WithRendererOptions(
+      html.WithXHTML(),
+      html.WithHardWraps(),
+			img64.WithParentPath(config.Git.LocalPath),
+    ),
 	)
 
   var author, lastModifier string 
