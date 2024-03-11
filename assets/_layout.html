@@ -7,62 +7,78 @@
     <title>TCP.WIKI</title>
     <link rel="stylesheet" href="/assets/main.css">
 </head>
-<body>
+  <body>
     <header>
-        <h1>TCP.WIKI</h1>
+      <div class="navbar bg-base-200">
+        <div class="flex-1">
+          <h1 class="btn btn-ghost text-xl">TCP.WIKI</h1>
+        </div>
         <nav>
-            <ul>
-                <li><a href="/">Home</a></li>
+          <div class="flex-none">
+            <ul class="menu menu-horizontal px-1">
+              <li><a href="/">Home</a></li>
                 <!-- Add more links to your menubar here -->
-                <li><a href="/what">What</a></li>
-                <li><a href="/who">Who</a></li>
+              <li><a href="/what">What</a></li>
+              <li><a href="/who">Who</a></li>
+              <li class="dropdown dropdown-bottom dropdown-end">
+                <details>
+                  <summary>
+                    Pages
+                  </summary>
+                  <div class="dropdown-content">
+                    <ul class="z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                      {{ range .Pages }}
+                        <li><a href="/{{ . }}">{{ . }}</a></li>
+                      {{ end }}
+                    </ul>
+                  </div>
+                </details>
+              </li>
             </ul>
+          </div>
         </nav>
-    </header>
-    <main>
-        <div class="content">
-            {{ .Content }}
-        </div>
-        <hr>
-        {{ if .UseGit }}
-        <div class="page-info">
-            {{- if eq .Author .LastModifier -}}
-              Authored: {{ .Author }} @ {{ .AuthoredDate.Format "2006/01/02" }}
-            {{- else -}}
-              Authored: {{ .Author }} @ {{ .AuthoredDate.Format "2006/01/02" }} - Modified: {{ .LastModifier }} @ {{ .LastModifiedDate.Format "2006/01/02" }}
-            {{- end -}}
-        </div>
-        {{ end }}
-        <div class="comments">
-            <h2>Comments</h2>
-            {{ range .Comments }}
-            <div class="comment">
-                <p>{{ .Content }}</p>
-                <p><small>{{ .Author }} at {{ .Date }}</small></p>
-            </div>
-            {{ end }}
-        </div> 
-
-    </main>
-    <form method="POST" action="/submit_comment">
-        <input type="hidden" name="path" value="{{ .Path }}">
-        <div class="form-group">
-            <label for="author">Name:</label>
-            <input type="text" id="author" name="author">
-        </div>
-        <div class="form-group">
-            <label for="body">Comment:</label>
-            <textarea id="content" name="content"></textarea>
-        </div>
-        <button type="submit">Submit</button>
-    </form>
-      <div class="sidebar">
-        <h2>Pages</h2>
-        <ul>
-          {{ range .Pages }}
-            <li><a href="/{{ . }}">{{ . }}</a></li>
-          {{ end }}
-        </ul>
       </div>
-</body>
+    </header>
+    <main class="bg-base-300">
+      <div class="prose content-center">
+        {{ .Content }}
+      </div>
+      {{ if .UseGit }}
+        <footer class="footer px-10 py-4 border-t bg-base-200 text-base-content border-base-300">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6"><path stroke="oklch(var(--s))" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <div class="md:justify-self-end text-secondary">
+          {{- if eq .Author .LastModifier -}}
+            Authored: {{ .Author }} @ {{ .AuthoredDate.Format "2006/01/02" }}
+          {{- else -}}
+            Authored: {{ .Author }} @ {{ .AuthoredDate.Format "2006/01/02" }} - Modified: {{ .LastModifier }} @ {{ .LastModifiedDate.Format "2006/01/02" }}
+          {{- end -}}
+          </div>
+        </footer>
+      {{ end }}
+      <div class="card bg-base-100 shadow-xl bg-base-250 text-neutral-content">
+        <div class="card-body">
+          <h2 class="card-title">Comments</h2>
+          {{ range .Comments }}
+            <div class="chat chat-start">
+              <p class="chat-header">{{ .Author }}</p>
+              <p class="chat-bubble">{{ .Content }}</p>
+              <time class="chat-footer text-xs opacity-50">Sent at {{ .Date }}<time>
+            </div>
+          {{ end }}
+          <form method="POST" action="/submit_comment">
+            <input type="hidden" name="path" value="{{ .Path }}"></input>
+            <div class="form-control">
+              <label for="author" class="Label">Name:</label>
+              <input type="text" id="author" name="author" class="input input-bordered max-w-md" placeholder="Your Name" required></input>
+            </div>
+            <div class="form-control space-y-0.5">
+              <label for="content" class="label">Comment:</label>
+              <textarea id="content" name="content" class="textarea textarea-bordered max-w-md" required placeholder="Your Comment Here"></textarea>
+              <button class="btn btn-secondary sm:btn-sm md:btn-md lg:btn-l max-w-xs" type="submit">Submit</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </body>
 </html>

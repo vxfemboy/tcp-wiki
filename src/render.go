@@ -11,9 +11,12 @@ import (
 	"time"
 
 	"github.com/prologic/bitcask"
+	img64 "github.com/tenkoh/goldmark-img64"
 	"github.com/yuin/goldmark"
 	highlighting "github.com/yuin/goldmark-highlighting"
 	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer/html"
 )
 
 type Page struct {
@@ -24,64 +27,74 @@ type Page struct {
 	AuthoredDate     *time.Time
 	LastModifier     string
 	LastModifiedDate *time.Time
-  Pages            []string
-  UseGit           bool
+	Pages            []string
+	UseGit           bool
 }
 
 func renderPage(w http.ResponseWriter, r *http.Request, config *Config, filePath string, commentsDB *bitcask.Bitcask, pages []string) error {
-    var content []byte
-    var err error
+	var content []byte
+	var err error
 
-    if config.Git.UseGit {
-      content, err = readFileFromRepo(config.Git.LocalPath, filePath)
-      if err != nil {
-        return err
-      }
-    } else {
-      fullPath := filepath.Join(config.Git.LocalPath, filePath)
-      content, err = ioutil.ReadFile(fullPath)
-      if err != nil {
-        return err
-      }
-    }
+	if config.Git.UseGit {
+		content, err = readFileFromRepo(config.Git.LocalPath, filePath)
+		if err != nil {
+			return err
+		}
+	} else {
+		fullPath := filepath.Join(config.Git.LocalPath, filePath)
+		content, err = ioutil.ReadFile(fullPath)
+		if err != nil {
+			return err
+		}
+	}
 
-    ext := filepath.Ext(filePath)
-    switch ext {
-    case ".md":
-        renderMarkdown(w, r, content, commentsDB, filePath, pages, config)
-    case ".html", ".css":
-        renderStatic(w, content, ext)
-    default:
-        return fmt.Errorf("unsupported file format")
-    }
-    return nil
+	ext := filepath.Ext(filePath)
+	switch ext {
+	case ".md":
+		renderMarkdown(w, r, content, commentsDB, filePath, pages, config)
+	case ".html", ".css":
+		renderStatic(w, content, ext)
+	default:
+		return fmt.Errorf("unsupported file format")
+	}
+	return nil
 }
 
 func renderMarkdown(w http.ResponseWriter, r *http.Request, content []byte, commentsDB *bitcask.Bitcask, filePath string, pages []string, config *Config) {
 
 	md := goldmark.New(
 		goldmark.WithExtensions(
-			extension.GFM,
-      highlighting.NewHighlighting(
-			  highlighting.WithStyle("monokai"),
+			extension.GFM, // images should probably be base64 encoded https://github.com/tenkoh/goldmark-img64 for extra performance
+			extension.Table,
+			highlighting.NewHighlighting(
+				highlighting.WithStyle("monokai"),
 			),
+			img64.Img64,
+		), // does this code below do anything useful?
+		goldmark.WithParserOptions(
+			parser.WithAutoHeadingID(),
+		),
+		goldmark.WithRendererOptions(
+			html.WithXHTML(),
+			html.WithHardWraps(),
+			img64.WithParentPath(config.Git.LocalPath),
 		),
 	)
 
-  var author, lastModifier string 
-  var authoredDate, lastModifiedDate *time.Time
-  var err error
+	var author, lastModifier string
+	var authoredDate, lastModifiedDate *time.Time
+	var err error
 
-  if config.Git.UseGit {
-    var ad, lmd time.Time
-    author, ad, lastModifier, lmd, err = getAuthorAndLastModification(config.Git.LocalPath, filePath)
-	  if err != nil {
-		  http.Error(w, "Error fetching author and last modification date", http.StatusInternalServerError)
-		  return
-	  }
-    authoredDate = &ad 
-    lastModifiedDate = &lmd
-  }
+	if config.Git.UseGit {
+		var ad, lmd time.Time
+		author, ad, lastModifier, lmd, err = getAuthorAndLastModification(config.Git.LocalPath, filePath)
+		if err != nil {
+			http.Error(w, "Error fetching author and last modification date", http.StatusInternalServerError)
+			return
+		}
+		authoredDate = &ad
+		lastModifiedDate = &lmd
+	}
 
 	var mdBuf bytes.Buffer
 	err = md.Convert(content, &mdBuf)
@@ -90,13 +103,12 @@ func renderMarkdown(w http.ResponseWriter, r *http.Request, content []byte, comm
 		return
 	}
 
-
-  layout, err := ioutil.ReadFile("assets/_layout.html")
-  if err != nil {
-    log.Printf("Error reading _layout.html: %v", err)
-    http.Error(w, "Layout not found", http.StatusInternalServerError)
-    return
-  }
+	layout, err := ioutil.ReadFile("assets/_layout.html")
+	if err != nil {
+		log.Printf("Error reading _layout.html: %v", err)
+		http.Error(w, "Layout not found", http.StatusInternalServerError)
+		return
+	}
 
 	comments, err := getComments(commentsDB, r.URL.Path)
 	if err != nil && err != bitcask.ErrKeyNotFound {
@@ -112,8 +124,8 @@ func renderMarkdown(w http.ResponseWriter, r *http.Request, content []byte, comm
 		AuthoredDate:     authoredDate,
 		LastModifier:     lastModifier,
 		LastModifiedDate: lastModifiedDate,
-    Pages:            pages,
-    UseGit:           config.Git.UseGit,
+		Pages:            pages,
+		UseGit:           config.Git.UseGit,
 	}
 
 	t, err := template.New("layout").Parse(string(layout))
@@ -125,8 +137,8 @@ func renderMarkdown(w http.ResponseWriter, r *http.Request, content []byte, comm
 	var buf bytes.Buffer
 	err = t.Execute(&buf, page)
 	if err != nil {
-		log.Printf("Error executing template: %v", err) 
-    http.Error(w, "Error rendering layout", http.StatusInternalServerError)
+		log.Printf("Error executing template: %v", err)
+		http.Error(w, "Error rendering layout", http.StatusInternalServerError)
 		return
 	}
 

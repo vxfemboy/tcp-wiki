@@ -1,21 +1,30 @@
+
 # TCP-WIKI
+[![Go Report Card](https://goreportcard.com/badge/github.com/vxfemboy/tcp-wiki)](https://goreportcard.com/report/github.com/vxfemboy/tcp-wiki)
 
-Feel free to commit, leave suggestions/ideas, issues, or really anything <3
+![screenshot](examples/tcp-wiki.png "TCP-WIKI")
 
-# What is TCP-WIKI ? 
-<center><img src="https://tcp.ac/i/TIZzK" alt="example screenshot" width="100" height="400"></center>
+### What is TCP-WIKI ? 
 
-TCP.WIKI is a secure and verifiable wiki platform designed for projects, code, courses, documents, articles, blogs, tutorials, and more.
+TCP.WIKI is a secure, minimal, and verifiable wiki platform designed for projects, code, courses, documents, articles, blogs, tutorials, and more.
 
 ### Project Goals
 
 The aim is to provide a secure, minimal, and easily verifiable wiki environment that supports a wide range of content types, from technical documentation, to educational materials, to blogs, and more.
 
+#### Features:
+
+* Full support for pages in Markdown and HTML
+
+* Pull from GIT for live updates or usage of local directory
+
+* No Javascript required
+
 ## Setup
 
 First clone this repository:
 ```bash
-git clone https://git.tcp.direct/S4D/tcp-wiki.git
+git clone https://github.com/vxfemboy/tcp-wiki.git
 ```
 Then you have to cd into the repo's folder and run/compile:
 ```bash
@@ -31,12 +40,12 @@ All you have to do is modify the following lines in the `config.toml` file:
 ```toml
 [Git]
 UseGit = true # Set to false to use LocalPath
-RepoURL = "https://git.tcp.direct/S4D/tcp-wiki.git" # Your Repo Here
+RepoURL = "https://github.com/vxfemboy/tcp-wiki.git" # Your Repo Here
 Branch = "main" # Your Repo Branch Here
 LocalPath = "data" # Directory to clone the git repo too
 ```
 
-Change the `RepoURL` line `https://git.tcp.direct/S4D/tcp-wiki.git` to your repo link,
+Change the `RepoURL` line `https://github.com/vxfemboy/tcp-wiki.git` to your repo link,
 change `main` to your specific repo's branch and you should be good to go!
 
 #### Want to use a local directory other then git repo?
@@ -52,9 +61,23 @@ LocalPath = "/home/crazy/blog" # The directory of your project
 ```
 make sure to also set `LocalPath` to the directory of your project
 
-> ### Want to use your own theme/layout?
->
-> Have a look at the `assets/` directory for the templates
+#### Want to use your own theme/layout?
+
+Have a look at the `assets/` directory for the template `_layout.html` this is the main file that will be used
+
+using [tailwindscss](https://tailwindcss.com/) and [daisyui](https://daisyui.com/) as a css library 
+
+to setup this for live modifications do:
+```
+cd sass
+npm install
+npx tailwindcss -i ./tail.css -o ../assets/main.css --watch
+```
+and to minify your css for production usage:
+```
+npx tailwindcss -o ../assets/main.css --minify
+```
+> ### ❤️ Feel free to commit, leave suggestions/ideas, issues, or really anything ❤️
 
 ## TODO
 
@@ -77,6 +100,6 @@ make sure to also set `LocalPath` to the directory of your project
     - [ ] set security controls per page
     - [ ] auto refresh on post
 - [x] dynamically generated links for all avaiable pages
-    - [x] sitemap - kinda 
+    - [x] sitemap - kinda (needs limited)
     - [x] working pages
-    - [ ] image support
+    - [x] image support
