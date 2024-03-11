@@ -5,53 +5,53 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-  "path/filepath"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
 
+	"github.com/BurntSushi/toml"
 	"github.com/go-git/go-git/v5"
 	"github.com/prologic/bitcask"
-  "github.com/BurntSushi/toml"
 )
 
 type Config struct {
-    Server struct {
-        Port string
-    }
-    Git struct {
-        UseGit    bool
-        RepoURL   string
-        Branch    string
-        LocalPath string
-    }
-    Database struct {
-        Path string
-    }
+	Server struct {
+		Port string
+	}
+	Git struct {
+		UseGit    bool
+		RepoURL   string
+		Branch    string
+		LocalPath string
+	}
+	Database struct {
+		Path string
+	}
 }
 
 var commentsDB *bitcask.Bitcask
 
 func main() {
-  var config Config 
-  if _, err := toml.DecodeFile("config.toml", &config); err != nil {
-    log.Fatalf("Failed to load config: %v", err)
-  }
+	var config Config
+	if _, err := toml.DecodeFile("config.toml", &config); err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
 
-  if config.Git.UseGit {
-    err := cloneRepository(config.Git.RepoURL, config.Git.LocalPath)
-    if err != nil && err != git.ErrRepositoryAlreadyExists {
-        log.Fatalf("Failed to clone repository: %v", err)
-    }
-  } else {
-    if _, err := os.Stat(config.Git.LocalPath); os.IsNotExist(err) {
-        os.MkdirAll(config.Git.LocalPath, os.ModePerm)
-    }	
-  }
+	if config.Git.UseGit {
+		err := cloneRepository(config.Git.RepoURL, config.Git.LocalPath)
+		if err != nil && err != git.ErrRepositoryAlreadyExists {
+			log.Fatalf("Failed to clone repository: %v", err)
+		}
+	} else {
+		if _, err := os.Stat(config.Git.LocalPath); os.IsNotExist(err) {
+			os.MkdirAll(config.Git.LocalPath, os.ModePerm)
+		}
+	}
 
-  var err error
+	var err error
 
 	commentsDB, err = bitcask.Open(config.Database.Path)
 	if err != nil {
@@ -59,13 +59,13 @@ func main() {
 	}
 	defer commentsDB.Close()
 
-  fs := http.FileServer(http.Dir("./assets"))
-  http.Handle("/assets/", http.StripPrefix("/assets/", fs))
+	fs := http.FileServer(http.Dir("./assets"))
+	http.Handle("/assets/", http.StripPrefix("/assets/", fs))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-    handler(&config, w, r)
-  })
+		handler(&config, w, r)
+	})
 	http.HandleFunc("/submit_comment", func(w http.ResponseWriter, r *http.Request) {
-    submitCommentHandler(w, r)
+		submitCommentHandler(w, r)
 	})
 
 	srv := &http.Server{Addr: config.Server.Port}
@@ -98,14 +98,14 @@ func handler(config *Config, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-  if config.Git.UseGit {
-	  err := pullRepository(config.Git.LocalPath, config.Git.Branch)
-	  if err != nil {
-		  log.Printf("Failed to pull repository: %v", err)
-      http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-      return
-	  }
-  }
+	if config.Git.UseGit {
+		err := pullRepository(config.Git.LocalPath, config.Git.Branch)
+		if err != nil {
+			log.Printf("Failed to pull repository: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+	}
 
 	filePath := strings.TrimPrefix(r.URL.Path, "/")
 	if filePath == "" {
@@ -117,38 +117,38 @@ func handler(config *Config, w http.ResponseWriter, r *http.Request) {
 	csp := "default-src 'self'; font-src 'self' data:; frame-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self';"
 	w.Header().Set("Content-Security-Policy", csp)
 
-  markdownFiles, err := listMarkdownFiles(config.Git.LocalPath)
-  if err != nil {
-    log.Printf("Error listing markdown files: %v", err)
-    http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-    return
-  }
+	markdownFiles, err := listMarkdownFiles(config.Git.LocalPath)
+	if err != nil {
+		log.Printf("Error listing markdown files: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 
-  err = renderPage(w, r, config, filePath, commentsDB, markdownFiles)
-  if err != nil {
+	err = renderPage(w, r, config, filePath, commentsDB, markdownFiles)
+	if err != nil {
 		log.Printf("Failed to render page: %v", err)
 		http.Error(w, "File not found", http.StatusNotFound)
 	}
 }
 
 func listMarkdownFiles(localPath string) ([]string, error) {
-    var files []string
+	var files []string
 
-    err := filepath.Walk(localPath, func(path string, info os.FileInfo, err error) error {
-        if err != nil {
-            return err
-        }
+	err := filepath.Walk(localPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
 
-        if !info.IsDir() && strings.HasSuffix(path, ".md") {
-            relPath, err := filepath.Rel(localPath, path)
-            if err != nil {
-                return err
-            }
+		if !info.IsDir() && strings.HasSuffix(path, ".md") {
+			relPath, err := filepath.Rel(localPath, path)
+			if err != nil {
+				return err
+			}
 
-            relPath = strings.Replace(relPath, string(os.PathSeparator), "/", -1)
-            files = append(files, relPath)
-        }
-        return nil
-    })
-    return files, err
+			relPath = strings.Replace(relPath, string(os.PathSeparator), "/", -1)
+			files = append(files, relPath)
+		}
+		return nil
+	})
+	return files, err
 }
