@@ -40,8 +40,10 @@
       </div>
     </header>
     <main class="bg-base-300">
-      <div class="prose content-center">
-        {{ .Content }}
+      <div class="w-full p-4">
+        <div class="prose prose-lg mx-auto">
+          {{ .Content }}
+        </div>
       </div>
       {{ if .UseGit }}
         <footer class="footer px-10 py-4 border-t bg-base-200 text-base-content border-base-300">

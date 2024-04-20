@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"time"
+	"regexp"
 
 	"github.com/prologic/bitcask"
 	img64 "github.com/tenkoh/goldmark-img64"
@@ -31,7 +32,7 @@ type Page struct {
 	UseGit           bool
 }
 
-func renderPage(w http.ResponseWriter, r *http.Request, config *Config, filePath string, commentsDB *bitcask.Bitcask, pages []string) error {
+func renderPage(w http.ResponseWriter, r *http.Request, config *Config, filePath string, commentsDB *bitcask.Bitcask, pages []string, tag string) error {
 	var content []byte
 	var err error
 
@@ -51,7 +52,7 @@ func renderPage(w http.ResponseWriter, r *http.Request, config *Config, filePath
 	ext := filepath.Ext(filePath)
 	switch ext {
 	case ".md":
-		renderMarkdown(w, r, content, commentsDB, filePath, pages, config)
+		renderMarkdown(w, r, content, commentsDB, filePath, pages, config, tag)
 	case ".html", ".css":
 		renderStatic(w, content, ext)
 	default:
@@ -60,26 +61,27 @@ func renderPage(w http.ResponseWriter, r *http.Request, config *Config, filePath
 	return nil
 }
 
-func renderMarkdown(w http.ResponseWriter, r *http.Request, content []byte, commentsDB *bitcask.Bitcask, filePath string, pages []string, config *Config) {
+func renderMarkdown(w http.ResponseWriter, r *http.Request, content []byte, commentsDB *bitcask.Bitcask, filePath string, pages []string, config *Config, tag string) {
 
 	md := goldmark.New(
-		goldmark.WithExtensions(
-			extension.GFM, // images should probably be base64 encoded https://github.com/tenkoh/goldmark-img64 for extra performance
-			extension.Table,
-			highlighting.NewHighlighting(
-				highlighting.WithStyle("monokai"),
-			),
-			img64.Img64,
-		), // does this code below do anything useful?
-		goldmark.WithParserOptions(
-			parser.WithAutoHeadingID(),
-		),
-		goldmark.WithRendererOptions(
-			html.WithXHTML(),
-			html.WithHardWraps(),
-			img64.WithParentPath(config.Git.LocalPath),
-		),
-	)
+	  goldmark.WithExtensions(
+		  extension.GFM, // images should probably be base64 encoded https://github.com/tenkoh/goldmark-img64 for extra performance
+		  extension.Table,
+		  highlighting.NewHighlighting(
+			  highlighting.WithStyle("monokai"),
+		  ),
+		  img64.Img64,
+	  ), // does this code below do anything useful?
+	  goldmark.WithParserOptions(
+		  parser.WithAutoHeadingID(),
+	  ),
+	  goldmark.WithRendererOptions(
+		  html.WithUnsafe(), // this is a security risk but its fine for now 
+		  html.WithXHTML(),
+		  html.WithHardWraps(),
+		  img64.WithParentPath(config.Git.LocalPath),
+	  ),
+  )
 
 	var author, lastModifier string
 	var authoredDate, lastModifiedDate *time.Time
@@ -116,8 +118,15 @@ func renderMarkdown(w http.ResponseWriter, r *http.Request, content []byte, comm
 		return
 	}
 
+	htmlContent := mdBuf.String()
+	// modify <details> tag to include a tag attribute
+  if tag != "" {
+     re := regexp.MustCompile(`(?i)<details tag="` + regexp.QuoteMeta(tag) + `">`)
+     htmlContent = re.ReplaceAllString(htmlContent, `<details open tag="` + tag + `">`)
+  }
+
 	page := &Page{
-		Content:          template.HTML(mdBuf.String()),
+		Content:          template.HTML(htmlContent),
 		Comments:         comments,
 		Path:             r.URL.Path,
 		Author:           author,

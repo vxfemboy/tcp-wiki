@@ -117,6 +117,8 @@ func handler(config *Config, w http.ResponseWriter, r *http.Request) {
 	csp := "default-src 'self'; font-src 'self' data:; frame-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self';"
 	w.Header().Set("Content-Security-Policy", csp)
 
+	tag := r.URL.Query().Get("tag")
+
 	markdownFiles, err := listMarkdownFiles(config.Git.LocalPath)
 	if err != nil {
 		log.Printf("Error listing markdown files: %v", err)
@@ -124,7 +126,7 @@ func handler(config *Config, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = renderPage(w, r, config, filePath, commentsDB, markdownFiles)
+	err = renderPage(w, r, config, filePath, commentsDB, markdownFiles, tag)
 	if err != nil {
 		log.Printf("Failed to render page: %v", err)
 		http.Error(w, "File not found", http.StatusNotFound)
